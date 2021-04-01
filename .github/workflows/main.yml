@@ -22,12 +22,6 @@ jobs:
         build
         --user
     
-    - name: Check the working directory
-      run: pwd
-      
-    - name: Check the directory contents
-      run: ls -lah
-    
     - name: Build a binary wheel and a source tarball
       run: >-
         python -m
