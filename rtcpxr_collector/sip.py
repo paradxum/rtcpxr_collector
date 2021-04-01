@@ -38,7 +38,7 @@ def parse_headers(f):
     """Return dict of HTTP headers parsed from a file object."""
     d = {}
     while 1:
-        line = f.readline().decode("utf-8")
+        line = f.readline().decode("utf-8", "replace")
         line = line.strip()
         if not line:
             break
@@ -61,7 +61,7 @@ def parse_body(f, headers):
         body = f.read()
     else:
         body = ''
-    return body.decode("utf-8")
+    return body.decode("utf-8", "replace")
 
 
 class Message:
@@ -87,7 +87,7 @@ class Message:
         f = BytesIO(buf)
         self.headers = parse_headers(f)
         self.body = parse_body(f, self.headers)
-        self.data = f.read().decode("utf-8")
+        self.data = f.read().decode("utf-8", "replace")
 
     def pack_hdr(self):
         return ''.join(['%s: %s\r\n' % (canon_header(k), v) for k, v in self.headers.items()])
@@ -117,7 +117,7 @@ class Request(Message):
 
     def unpack(self, buf):
         f = BytesIO(buf)
-        line = f.readline().decode("utf-8")
+        line = f.readline().decode("utf-8", "replace")
         lsplit = line.strip().split()
         if len(lsplit) != 3 or lsplit[0] not in self.__methods or not lsplit[2].startswith(self.__proto):
             raise SipUnpackError('invalid request: %r' % line)
@@ -143,7 +143,7 @@ class Response(Message):
 
     def unpack(self, buf):
         f = BytesIO(buf)
-        line = f.readline().decode("utf-8")
+        line = f.readline().decode("utf-8", "replace")
         lsplit = line.strip().split(None, 2)
         if len(lsplit) < 2 or not lsplit[0].startswith(self.__proto) or not lsplit[1].isdigit():
             raise SipUnpackError('invalid response: %r' % line)
