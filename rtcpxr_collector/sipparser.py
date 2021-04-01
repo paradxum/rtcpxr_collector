@@ -32,7 +32,7 @@ def parsesip(r):
     # Grab what we want from the header
     res['Handset'] = {}
     packetTo = parseSipAddr(r.headers['to'])
-    if packetTo['name'] is not None and packetTo['name'] != '' and re.match(r'[0-9A-F]{12}', packetTo['name']):
+    if packetTo and packetTo['name'] is not None and packetTo['name'] != '' and re.match(r'[0-9A-F]{12}', packetTo['name']):
         res['Handset']['MAC'] = packetTo['name']
     res['Handset']['from'] = parseSipAddr(r.headers['from'])
     res['Handset']['contact'] = parseSipAddr(r.headers['contact'])
