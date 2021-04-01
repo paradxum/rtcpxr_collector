@@ -9,7 +9,7 @@ Most code has been refactored and stripped down.
 # Basic usage
 This is meant to be part of a larger project (hence a library.)
 I highly suggest you configure your phones to send to your collector 
-with the "name" set to the mac address of the handset. This is the only way to uniquely identify a handset.
+with the "name" set to the mac address of the handset. This is the only way to uniquely identify a handset (that I've found at least.)
 
 To run the code with all the defaults:
 ```
@@ -47,5 +47,19 @@ from rtcpxr_collector import vqcollector
 vqs = vqcollector.CollectorServer(local_ip=10.10.10.15, port=5061)
 vqs.listen()
 ```
+## All the options
+```
+The CollectorServer object opens a SIP socket to receive RTCP-XR packets,
+parses them, then sends the data to a handler.
 
+Attributes:
+    local_ip (ipV4 address): [None] Local IPV4 address to bind to (None: Autodetect)
+    port (int)             : [5060] Local Port to bind to
+    reply_to_socket (bool) : [False] Should we reply to the address from the socket, or the SIP Header
+    debug (bool)           : [False] Print Debugging information
+    handler (func)         : [None] Handler function for recieved data (None: pprint res data)
+
+Handler Function:
+    Takes 1 arg that is the parsed data structure.
+```
 

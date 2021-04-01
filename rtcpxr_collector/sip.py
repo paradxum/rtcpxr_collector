@@ -3,10 +3,7 @@
 # -*- coding: UTF-8 -*-
 # -*- Mode: Python -*-
 #
-# Copyright (c) 2013 Pietro Bertera <pietro@bertera.it>
-# This file is covered by the LGPLv3 or later, read COPYING for details.
 
-from io import StringIO
 from io import BytesIO
 
 
@@ -27,8 +24,7 @@ class SipPackError(SipError):
 
 
 def canon_header(s):
-    exception = {'call-id': 'Call-ID', 'cseq':
-                 'CSeq', 'www-authenticate': 'WWW-Authenticate'}
+    exception = {'call-id': 'Call-ID', 'cseq': 'CSeq', 'www-authenticate': 'WWW-Authenticate'}
     short = ['allow-events', 'u', 'call-id', 'i', 'contact', 'm',
              'content-encoding', 'e', 'content-length', 'l',
              'content-type', 'c', 'event', 'o', 'from', 'f',
@@ -46,11 +42,11 @@ def parse_headers(f):
         line = line.strip()
         if not line:
             break
-        l = line.split(None, 1)
-        if not l[0].endswith(':'):
+        lsplit = line.split(None, 1)
+        if not lsplit[0].endswith(':'):
             raise SipUnpackError('invalid header: %r' % line)
-        k = l[0][:-1].lower()
-        d[k] = len(l) != 1 and l[1] or ''
+        k = lsplit[0][:-1].lower()
+        d[k] = len(lsplit) != 1 and lsplit[1] or ''
     return d
 
 
@@ -122,16 +118,16 @@ class Request(Message):
     def unpack(self, buf):
         f = BytesIO(buf)
         line = f.readline().decode("utf-8")
-        l = line.strip().split()
-        if len(l) != 3 or l[0] not in self.__methods or not l[2].startswith(self.__proto):
+        lsplit = line.strip().split()
+        if len(lsplit) != 3 or lsplit[0] not in self.__methods or not lsplit[2].startswith(self.__proto):
             raise SipUnpackError('invalid request: %r' % line)
-        self.method = l[0]
-        self.uri = l[1]
-        self.version = l[2][len(self.__proto) + 1:]
+        self.method = lsplit[0]
+        self.uri = lsplit[1]
+        self.version = lsplit[2][len(self.__proto) + 1:]
         Message.unpack(self, f.read())
 
     def __str__(self):
-        return '%s %s %s/%s\r\n'%(self.method, self.uri, self.__proto, self.version) + Message.__str__(self)
+        return '%s %s %s/%s\r\n' % (self.method, self.uri, self.__proto, self.version) + Message.__str__(self)
 
 
 class Response(Message):
@@ -148,13 +144,13 @@ class Response(Message):
     def unpack(self, buf):
         f = BytesIO(buf)
         line = f.readline().decode("utf-8")
-        l = line.strip().split(None, 2)
-        if len(l) < 2 or not l[0].startswith(self.__proto) or not l[1].isdigit():
+        lsplit = line.strip().split(None, 2)
+        if len(lsplit) < 2 or not lsplit[0].startswith(self.__proto) or not lsplit[1].isdigit():
             raise SipUnpackError('invalid response: %r' % line)
-        self.version = l[0][len(self.__proto) + 1:]
-        self.status = l[1]
-        self.reason = l[2]
+        self.version = lsplit[0][len(self.__proto) + 1:]
+        self.status = lsplit[1]
+        self.reason = lsplit[2]
         Message.unpack(self, f.read())
 
     def __str__(self):
-        return '%s/%s %s %s\r\n'%(self.__proto, self.version, self.status, self.reason) + Message.__str__(self)
+        return '%s/%s %s %s\r\n' % (self.__proto, self.version, self.status, self.reason) + Message.__str__(self)

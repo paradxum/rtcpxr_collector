@@ -6,6 +6,7 @@
 
 import re
 
+
 def parseSipAddr(addr):
     if isinstance(addr, str):
         addr = [addr]
@@ -24,13 +25,14 @@ def parseSipAddr(addr):
             return res
     return False
 
+
 def parsesip(r):
-    res= {}
+    res = {}
 
     # Grab what we want from the header
     res['Handset'] = {}
     packetTo = parseSipAddr(r.headers['to'])
-    if packetTo['name'] is not None and packetTo['name'] != '' and re.match(r'[0-9A-F]{12}',packetTo['name']):
+    if packetTo['name'] is not None and packetTo['name'] != '' and re.match(r'[0-9A-F]{12}', packetTo['name']):
         res['Handset']['MAC'] = packetTo['name']
     res['Handset']['from'] = parseSipAddr(r.headers['from'])
     res['Handset']['contact'] = parseSipAddr(r.headers['contact'])
@@ -53,7 +55,7 @@ def parsesip(r):
             res[esp[0]] = parseSipAddr(esp[1])
             continue
 
-        values = re.split(r' |;',esp[1])
+        values = re.split(r' |;', esp[1])
         if len(values) == 1:
             res[esp[0]] = values[0]
             continue
@@ -66,4 +68,3 @@ def parsesip(r):
             else:
                 res[esp[0]][vvs[0]] = vvs[1]
     return res
-
