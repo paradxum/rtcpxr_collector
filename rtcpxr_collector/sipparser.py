@@ -11,7 +11,7 @@ def parseSipAddr(addr):
     if isinstance(addr, str):
         addr = [addr]
     for a in addr:
-        m = re.search(r'(\"(.+)\" |)\<sip\:([0-9A-E]+)\@([0-9.]+)(\:([0-9]+)|)(;.*|)\>', a)
+        m = re.search(r'(\"(.+)\" |)\<sip\:([0-9A-F]+)\@([0-9.]+)(\:([0-9]+)|)(;.*|)\>', a)
         if m:
             res = {}
             res['desc'] = ''
@@ -23,6 +23,8 @@ def parseSipAddr(addr):
             if m.group(6) is not None:
                 res['port'] = m.group(6)
             return res
+        # else:
+        #     print("Could not parse Address: ##%s##" % a)
     return False
 
 
@@ -32,8 +34,13 @@ def parsesip(r):
     # Grab what we want from the header
     res['Handset'] = {}
     packetTo = parseSipAddr(r.headers['to'])
-    if packetTo and packetTo['name'] is not None and packetTo['name'] != '' and re.match(r'[0-9A-F]{12}', packetTo['name']):
+    if packetTo \
+            and packetTo['name'] is not None \
+            and packetTo['name'] != '' \
+            and re.match(r'[0-9A-F]{12}', packetTo['name']):
         res['Handset']['MAC'] = packetTo['name']
+    # else:
+    #     print("Error with to: ##%s##" % r.headers['to'])
     res['Handset']['from'] = parseSipAddr(r.headers['from'])
     res['Handset']['contact'] = parseSipAddr(r.headers['contact'])
     res['Handset']['user-agent'] = r.headers['user-agent']
