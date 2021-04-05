@@ -41,16 +41,19 @@ class CollectorServer:
     Attributes:
         local_ip (ipV4 address): [None] Local IPV4 address to bind to (None: Autodetect)
         port (int)             : [5060] Local Port to bind to
-        reply_to_socket (bool) : [False] Should we reply to the address from the socket, or the SIP Header
+        reply_to_socket (bool) : [False] Should we reply to the address from the socket? Otherwise use SIP Header IP
+        contact_from_sip(bool) : [False] Should we set our contact from the SIP header? Otherwise bound IP
         debug (bool)           : [False] Print Debugging information
         handler (func)         : [None] Handler function for recieved data (None: pprint res data)
 
     Handler Function:
         Takes 1 arg that is the parsed data structure.
     '''
-    def __init__(self, local_ip=None, port=5060, reply_to_socket=False, debug=False, handler=None):
+    def __init__(self, local_ip=None, port=5060, reply_to_socket=False, contact_from_sip=False,
+                 debug=False, handler=None):
         self.port = port
         self.reply_to_socket = reply_to_socket
+        self.contact_from_sip = contact_from_sip
         self.debug = debug
 
         self.handler = handler
@@ -123,6 +126,12 @@ class CollectorServer:
         response.headers['content-length'] = 0
         response.headers['expires'] = 0
         response.headers['contact'] = "<sip:%s:%d;transport=tcp;handler=dum>" % (self.local_ip, self.port)
+        if self.contact_from_sip and 'to' in request.headers:
+            # Pull out the to header
+            rem = re.search(r'\@([0-9.]+)\:([0-9]+)', request.headers['to'])
+            if rem:
+                response.headers['contact'] = "<sip:%s:%d;transport=tcp;handler=dum>" % \
+                                              (rem.group(1), int(rem.group(2)))
 
         # Determine endpoint to send to
         if self.reply_to_socket is False:
