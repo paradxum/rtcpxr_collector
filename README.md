@@ -34,6 +34,7 @@ def logHandler(r):
                                              r['QualityEst']['MOSLQ'],
                                              "%s %s"%(r['LocalID']['name'],r['LocalID']['desc']),
                                              "%s %s"%(r['RemoteID']['name'],r['RemoteID']['desc']) ))
+    return True
 
 vqs = vqcollector.CollectorServer(handler=logHandler)
 vqs.listen()
@@ -58,8 +59,11 @@ Attributes:
     reply_to_socket (bool) : [False] Should we reply to the address from the socket, or the SIP Header
     debug (bool)           : [False] Print Debugging information
     handler (func)         : [None] Handler function for recieved data (None: pprint res data)
+    timeout (int)          : [10] Select Timeout in seconds
+    timeout_handler (func) : [None] Handler for select timeout event
 
 Handler Function:
     Takes 1 arg that is the parsed data structure.
+    Returns: Send Response Packet? True or False
 ```
 
