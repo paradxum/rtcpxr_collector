@@ -45,20 +45,28 @@ class CollectorServer:
         contact_from_sip(bool) : [False] Should we set our contact from the SIP header? Otherwise bound IP
         debug (bool)           : [False] Print Debugging information
         handler (func)         : [None] Handler function for recieved data (None: pprint res data)
+        timeout (int)          : [10] Select Timeout in seconds
+        timeout_handler (func) : [None] Handler for select timeout event
 
     Handler Function:
         Takes 1 arg that is the parsed data structure.
+        Returns: Send Response Packet? True or False
     '''
     def __init__(self, local_ip=None, port=5060, reply_to_socket=False, contact_from_sip=False,
-                 debug=False, handler=None):
+                 debug=False, handler=None, timeout=10, timeout_handler=None):
         self.port = port
         self.reply_to_socket = reply_to_socket
         self.contact_from_sip = contact_from_sip
         self.debug = debug
+        self.selectto = timeout
 
         self.handler = handler
         if self.handler is None:
             self.handler = self.default_handler
+
+        self.timeout_handler = timeout_handler
+        if self.timeout_handler is None:
+            self.timeout_handler = lambda x: (x)
 
         self.local_ip = local_ip
         if self.local_ip is None:
@@ -82,7 +90,10 @@ class CollectorServer:
         self.printDebug("Starting listening loop")
 
         while inputs:
-            readable, writable, exceptional = select.select(inputs, outputs, inputs)
+            readable, writable, exceptional = select.select(inputs, outputs, inputs, self.selectto)
+            if len(readable) == 0:
+                self.printDebug("Select timeout event")
+                self.timeout_handler(self.selectto)
             for s in readable:
                 if s is self.recvsocket:
                     if not self.handle_sip_packet():
@@ -145,13 +156,13 @@ class CollectorServer:
             phone_port = remote[1]
             self.printDebug("Phone IP and port from socket: %s:%d" % (phone_ip, phone_port))
 
-        self.send_response(phone_ip, phone_port, response)
-
-        self.handler(sipparser.parsesip(request))
+        if self.handler(sipparser.parsesip(request)):
+            self.send_response(phone_ip, phone_port, response)
 
     def default_handler(self, request):
         pp = pprint.PrettyPrinter(indent=2)
         pp.pprint(request)
+        return True
 
     def send_response(self, phone_ip, phone_port, response):
         self.printDebug("Creating send socket")

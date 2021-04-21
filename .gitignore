@@ -134,3 +134,4 @@ build
 dist
 *.swp
 *.pyc
+collect.py
