@@ -11,7 +11,7 @@ def parseSipAddr(addr):
     if isinstance(addr, str):
         addr = [addr]
     for a in addr:
-        m = re.search(r'(\"(.+)\" |)\<sip\:([0-9A-F]+)\@([0-9.]+)(\:([0-9]+)|)(;.*|)\>', a)
+        m = re.search(r'(\"(.+)\" |)\<sip\:([0-9A-F]+)\@([A-Za-z0-9.]+)(\:([0-9]+)|)(;.*|)\>', a)
         if m:
             res = {}
             res['desc'] = ''
